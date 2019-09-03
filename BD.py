@@ -2,12 +2,18 @@
 import pymysql
 
 class BancoDeDados:
-    def conexaoBD(self): #retorna uma conexao com o BD
 
-        tabela
-        user
-        password
-        return pymysql.connect(db='sensores', user='temperatura', passwd='DisnelLab2019')
+    def dadosServ(self):
+        arquivo = open('data.txt', 'r')
+        dados = []
+        for i in arquivo:
+            dados.append(i)
+
+        return dados
+
+    def conexaoBD(self): #retorna uma conexao com o BD
+        dados = self.dadosServ()
+        return pymysql.connect(db=dados[0], user=dados[1], passwd=dados[2])
 
     def buscaNo(self,ip):
         # Abrimos uma conexão com o banco de dados:
@@ -95,11 +101,9 @@ class BancoDeDados:
 
 
 
+bd = BancoDeDados()
+
+bd.conexaoBD()
 
 
-
-
-
-
-    6
 
