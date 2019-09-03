@@ -5,14 +5,15 @@ class BancoDeDados:
 
     def dadosServ(self):
         arquivo = open('data.txt', 'r')
-        dados = []
+        dados = ''
         for i in arquivo:
-            dados.append(i)
+            dados = i
 
-        return dados
+        return dados.split()
 
     def conexaoBD(self): #retorna uma conexao com o BD
         dados = self.dadosServ()
+        print(dados)
         return pymysql.connect(db=dados[0], user=dados[1], passwd=dados[2])
 
     def buscaNo(self,ip):

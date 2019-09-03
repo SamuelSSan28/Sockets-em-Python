@@ -24,13 +24,13 @@ def dataHora():
     data_e_hora_atuais = datetime.now()
     return data_e_hora_atuais.strftime("%d/%m/%Y %H:%M").split()
 
-def dadosServ(self):
+def dadosServ():
     arquivo = open('data.txt', 'r')
-    dados = []
+    dados = ''
     for i in arquivo:
-        dados.append(i)
+        dados = i
 
-    return dados
+    return dados.split()
 
 def conectado(con, cliente):
     d = Dados()
@@ -59,11 +59,12 @@ def conectado(con, cliente):
 #-------------main-----------------
 dados = dadosServ()
 
-HOST = dados[3]   # Endereco IP do Servidor
-PORT = dados[4]         # Porta que o Servidor esta
+HOST = dados[3]  # Endereco IP do Servidor
+PORT = int(dados[4] ) # Porta que o Servidor está
 
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+print(len(HOST))
 orig = (HOST, PORT)
 
 tcp.bind(orig)
@@ -73,6 +74,6 @@ print("Servidor ON")
 while True:
     con, cliente = tcp.accept()
     d = conectado(con, cliente)
-    sgbd(d)
+    #sgbd(d)
 
 tcp.close()
