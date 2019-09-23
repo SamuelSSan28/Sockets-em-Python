@@ -33,12 +33,18 @@ def dadosServ():
 def recebe_msg(con):
     m = ''
     msg = con.recv(1024)
+    m = str(msg, 'cp437').split()
+    if len(m) > 0:
+        if m[0] == '2':
+            return m
     while not (b'fim' in msg):
         msg = con.recv(1024)
         if not msg: return
         m = str(msg, 'cp437').split()
 
+
     con.close()
+
     return m
 
 
@@ -46,7 +52,6 @@ def envia_pro_BD(tipo,registros):
     bd = BancoDeDados()
 
     if(tipo):
-        #print("Controle")
         aux = registros[6]
         ultimo = aux[1].split(':')
         #import pdb; pdb.set_trace()
@@ -54,18 +59,12 @@ def envia_pro_BD(tipo,registros):
         novo = registros[5].split(':')
         novo = timedelta(days = 0, hours = int(novo[0]), minutes = int(novo[1]),seconds=int(novo[2]))
         result = novo - ultimo
-        #print(registros)
-
 
         if result.total_seconds() < 20: #ajustar
-            #print("UPDATE")
-            #import pdb; pdb.set_trace()
-            #ip,data,horario,horario2,temp
             bd.alteraDados_Controle(registros[3], aux[0], aux[1], registros[5], registros[1])
         else:
-            #import pdb;   pdb.set_trace()
-            #ip,data,horario,temp,estado
             bd.insereDados_Controle(registros[3],registros[4],registros[5],registros[1],registros[2])
+
 
 
     else:
@@ -81,11 +80,8 @@ def envia_pro_BD(tipo,registros):
                 med_temp = med_temp /6
                 med_umi = med_umi /6
 
-                print(j,"  ",med_temp)
-
                 if bd.buscaNo(j[4]):
                     bd.insereDados_Sensores(j[4], j[5], j[6], str(med_temp), j[2], str(med_umi))
-                    print("----")
                 else:
                     bd.insereNodes(j[4], 'teste', tipo)
                     bd.insereDados_Sensores(j[4], j[5], j[6], j[1], j[2], j[3])
@@ -115,9 +111,10 @@ def controlador(con,ip,msg):
         msg.append(ip)
         msg.append(data)
         msg.append(horario)
-        #print(msg)
 
     return int(t),msg
+
+
 
 
 #-------------main-----------------
@@ -127,7 +124,8 @@ conectados = [] # lista de nodes que estão conectados
 HOST = dados[3]  # Endereco IP do Servidor
 PORT = int(dados[4] ) # Porta que o Servidor está
 
-sensores = {'10.13.34.45':[], '10.13.64.61':[],'10.13.72.212':[],'10.13.30.53':[],'10.13.65.126':[]}
+sensores = {}
+controle = ''
 tempo_controle = dataHora()
 
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -139,24 +137,37 @@ tcp.listen(10)
 
 print("Servidor ON")
 
+
 while True:
     con, cliente = tcp.accept()
-
+    tcp.sendto(b'1', cliente)
     a = recebe_msg(con)
     if not a: continue
 
     t,msg = controlador(con,cliente[0],a) #   t: tipo de msg       msg: a mensagem
 
-    if t == 0:
-        sensores[cliente[0]].append(msg)
-        envia_pro_BD(t, sensores)
-    else:
+
+    if t == 1 :
         msg.append(tempo_controle)
+        controle = cliente
         envia_pro_BD(t, msg)
-        #print(msg)
-        tempo_controle = (msg[4] +" " + msg[5]).split()
-        #print(tempo_controle)
+        print("Controle ->",msg)
+        tempo_controle = (msg[4] + " " + msg[5]).split()
+
+    if cliente[0] in sensores and t == 0: #se ip já é conhecido
+            sensores[cliente[0]].append(msg)
+            if len(sensores[cliente[0]]) == 6:
+                print("Media ->",msg)
+            envia_pro_BD(t, sensores)
+    elif t == 0:
+            sensores.update({cliente[0]: []})
+            sensores[cliente[0]].append(msg)
+            envia_pro_BD(t, sensores)
+
+    elif t == 2:
+        if(controle != ''):
+            print(controle)
+            tcp.sendto(b'1',controle)
 
 
 
-tcp.close()
