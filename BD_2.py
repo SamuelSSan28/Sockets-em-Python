@@ -2,29 +2,19 @@
 import pymysql
 
 class BancoDeDados:
-
-    def dadosServ(self):
-        arquivo = open('data.txt', 'r')
-        dados = ''
-        for i in arquivo:
-            dados = i
-
-        return dados.split()
-
-
     def conexaoBD(self): #retorna uma conexao com o BD
         #sensores temperatura DisnelLab2019
-        return pymysql.connect(db='sensores', user='temperatura', passwd='DisnelLab2019')
+        return pymysql.connect(db='sensores_2', user='temperatura', passwd='DisnelLab2019')
 
 
-    def buscaNo(self,ip):
+    def buscaNo(self,id):
         # Abrimos uma conexão com o banco de dados:
         c = self.conexaoBD()
         # Cria um cursor:
         cursor = c.cursor()
 
         # Executa o comando:
-        cmd = "SELECT ip,mac,tipo FROM nodes WHERE ip = '"+ip+"'"
+        cmd = "SELECT nome,tipo FROM nodes WHERE id_node = '"+id+"'"
         cursor.execute(cmd)
 
         # Recupera o resultado:
@@ -38,27 +28,6 @@ class BancoDeDados:
 
         return  not (resultado == ())
 
-    def buscaSensor(self,ip):
-        # Abrimos uma conexão com o banco de dados:
-        c = self.conexaoBD()
-        # Cria um cursor:
-        cursor = c.cursor()
-
-        # Executa o comando:
-        cmd = "SELECT temperatura_sala,umidade FROM registros_sensores WHERE ip_node = '"+ip+"'"
-        cursor.execute(cmd)
-
-        # Recupera o resultado:
-        resultado = cursor.fetchall()
-
-        # Por padrão, não é efetuado commit automaticamente. Você deve commitar para salvar suas alterações.
-        c.commit()
-
-        #fecha conexao
-        c.close()
-
-        return  (resultado)
-
 
     def insereDados_Sensores(self,id,data,horario,temp,corrente,umidade): # insere dados na tabela registros
         # Abrimos uma conexão com o banco de dados:
@@ -68,7 +37,7 @@ class BancoDeDados:
         cursor = c.cursor()
 
         # Executa o comando:
-        cmd = "INSERT INTO registros_sensores (id_node,dia,horario,temperatura_sala,corrente,umidade) VALUES ('"+id+"','"+data+"','"+horario+"','"+temp+"','"+corrente+"','"+umidade+"')"
+        cmd = "INSERT INTO registros_sensores (id_node,dia,horario,temperatura,corrente,umidade) VALUES ('"+id+"','"+data+"','"+horario+"','"+temp+"','"+corrente+"','"+umidade+"')"
         cursor.execute(cmd)
 
         # Efetua um commit no banco de dados.
@@ -81,7 +50,7 @@ class BancoDeDados:
 
 
 
-    def insereDados_Controle(self,ip,data,horario,temp,estado): # insere dados na tabela registros
+    def insereDados_Controle(self,id,data,horario,temp,estado): # insere dados na tabela registros
         # Abrimos uma conexão com o banco de dados:
         #print(ip, data, horario, temp, estado)
         c = self.conexaoBD()
@@ -92,7 +61,7 @@ class BancoDeDados:
         # Executa o comando:
         #import pdb; pdb.set_trace()
 
-        cmd = "INSERT INTO registros_controle (ip_Node,dia,horario,temperatura,estado) VALUES ('"+ip+"','"+data+"','"+horario+"','"+temp+"','"+estado+"')"
+        cmd = "INSERT INTO registros_controle (id_node,dia,horario,temperatura,estado) VALUES ('"+id+"','"+data+"','"+horario+"','"+temp+"','"+estado+"')"
         cursor.execute(cmd)
 
         # Efetua um commit no banco de dados.
@@ -112,7 +81,7 @@ class BancoDeDados:
 
         # Executa o comando:
         #import pdb; pdb.set_trace()
-        sql = "UPDATE registros_controle SET horario =%s,temperatura=%s  WHERE ip_Node = %s AND dia = %s AND horario =%s"
+        sql = "UPDATE registros_controle SET horario =%s,temperatura=%s  WHERE id_node = %s AND dia = %s AND horario =%s"
         val = [horario2,temp,ip,data,horario]
 
         #cmd = "UPDATE registros_sensores SET ip_Node = '"+ip+"',dia ='" + ""+"',horario ='" + "'"
@@ -136,7 +105,7 @@ class BancoDeDados:
         cursor = c.cursor()
 
         # Executa o comando:
-        cmd = "INSERT INTO nodes (id_node,tipo) VALUES ('" + id + "','"+ str(tipo) +"')"
+        cmd = "INSERT INTO nodes (id_node,tipo,id_amb) VALUES ('" + id +"','"+ str(tipo) +"','"+ str(1) +"')"
         cursor.execute(cmd)
 
         # Efetua um commit no banco de dados.
@@ -155,14 +124,14 @@ class BancoDeDados:
         # Cria um cursor:
         cursor = c.cursor()
 
-        # Executa o comando:
-        cmd = "DElETE  FROM nodes "
+        cmd = "DElETE  FROM registros_controle "
         cursor.execute(cmd)
 
         cmd = "DElETE  FROM registros_sensores "
         cursor.execute(cmd)
 
-        cmd = "DElETE  FROM registros_controle "
+        # Executa o comando:
+        cmd = "DElETE  FROM nodes "
         cursor.execute(cmd)
 
         # Efetua um commit no banco de dados.
