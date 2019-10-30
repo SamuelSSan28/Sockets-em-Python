@@ -139,23 +139,13 @@ while True:
 
         t,msg = controlador(con,cliente[0],a) #   t: tipo de msg       msg: a mensagem
 
-        if t == 1:
-            msg.append(tempo_controle)
-            controle = cliente
-            envia_pro_BD(t, msg)
-            print("Sensor " + msg[0],"--> controle")
-            tempo_controle = (msg[3] + " " + msg[4]).split()
-
-        if cliente[0] in sensores and t == 0:  # se ip já é conhecido
-            sensores[cliente[0]].append(msg)
-            if len(sensores[cliente[0]]) == 6:
-                print("Sensor" , msg[0] ,  "--> media")
-            envia_pro_BD(t, sensores)
-        elif t == 0:
-            sensores.update({cliente[0]: []})
-            sensores[cliente[0]].append(msg)
-            envia_pro_BD(t, sensores)
-
-
+        msg = msg[2]
+        temp = 19
+        file = "Ligando_" + str(temp) + ".txt"
+        i = 0
+        while (i < 10):
+            arq = open(file, 'a+')
+            arq.write(msg)
+            i += 1
 
 
