@@ -4,17 +4,18 @@ import pymysql
 class BancoDeDados:
     def conexaoBD(self): #retorna uma conexao com o BD
         #sensores temperatura DisnelLab2019
-        return pymysql.connect(db='sensores_2', user='temperatura', passwd='DisnelLab2019')
+        return pymysql.connect(db='sensores_2', user='temperatura', passwd='DisnelLab2019',port=3360)
 
 
     def buscaNo(self,id):
         # Abrimos uma conexão com o banco de dados:
         c = self.conexaoBD()
+
         # Cria um cursor:
         cursor = c.cursor()
 
         # Executa o comando:
-        cmd = "SELECT nome,tipo FROM nodes WHERE id_node = '"+id+"'"
+        cmd = "SELECT descricao,tipo FROM nodes WHERE id_node = '"+id+"'"
         cursor.execute(cmd)
 
         # Recupera o resultado:

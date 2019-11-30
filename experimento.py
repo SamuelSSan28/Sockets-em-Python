@@ -139,13 +139,10 @@ while True:
 
         t,msg = controlador(con,cliente[0],a) #   t: tipo de msg       msg: a mensagem
 
-        msg = msg[2]
-        temp = 19
+        msg = msg[2] + "\n"
+        temp = 27
         file = "Ligando_" + str(temp) + ".txt"
-        i = 0
-        while (i < 10):
-            arq = open(file, 'a+')
-            arq.write(msg)
-            i += 1
-
+        arq = open(file, 'a+')
+        arq.write(msg)
+        print(msg)
 
