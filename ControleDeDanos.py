@@ -127,11 +127,11 @@ class Controle:
         dif = (data_e_hora_atuais-time_stamp)
         dif = dif.total_seconds()
 
-        if dif > 70 and e != antigo:
+        if dif > 1800 and e != antigo:
             e = "Error: Servidor caiu"
             self.publish("servidor/logQuedas", e+" no dia " + d + " as " + h + "\n")
             arq = open('logControle.txt', 'a+')
-            arq.write(e)
+            arq.write(e+" no dia " + d + " as " + h + "\n")
             arq.close()
 
         elif antigo != "Servidor On":

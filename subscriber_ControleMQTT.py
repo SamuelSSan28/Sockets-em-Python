@@ -1,7 +1,6 @@
 from datetime import datetime
 import sys
 import paho.mqtt.client as mqtt
-import sqlite3
 from BD_2 import BancoDeDados
 
 broker = "10.94.15.69"

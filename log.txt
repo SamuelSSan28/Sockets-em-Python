@@ -1,2 +1,7 @@
   Error: cannot convert float NaN to integer no dia 20/11/2019 as 13:48:27
   Error: cannot convert float NaN to integer no dia 20/11/2019 as 21:54:59
+  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:08:24
+  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:08:34
+  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:32:02
+  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:32:03
+  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:32:07
