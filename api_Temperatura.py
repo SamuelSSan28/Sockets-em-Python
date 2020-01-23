@@ -19,7 +19,7 @@ def clima():
     req = "https://api.weatherbit.io/v2.0/current?city=Teresina,BR&key=89ff6003e58e45e69116346b6df12f54"
     try:
         resp = requests.get(req)
-        print(resp)
+        print(resp,end = '   ')
         r =  json.loads(resp.text)
         c = [r['data'][0]['temp'] ,r['data'][0]['rh'],r['data'][0]['app_temp'],r['data'][0]['ob_time']]
 
@@ -45,7 +45,7 @@ def insereTempAPI(data,horarioM,horarioR,temp,humi,sensTermic): # insere dados n
     cursor = c.cursor()
 
     # Executa o comando:
-    sql  = "INSERT INTO nodes (temperatura,humidade,sensacao_termica,dia,horario_medicao,horario_registro) VALUES (%s,%s,%s,%s,%s,%s)"
+    sql  = "INSERT INTO registros_temp_cidade (temperatura,humidade,sensacao_termica,dia,horario_medicao,horario_registro) VALUES (%s,%s,%s,%s,%s,%s)"
     val = [temp,humi,sensTermic,data,horarioM,horarioR]
     cursor.execute(sql,val)
 
@@ -64,15 +64,15 @@ print("Servidor API On")
 atual = dataHora()
 while True:
     try:
-        if diff_tempo(atual[0]+' '+atual[1]) >= 60:
+        if diff_tempo(atual[0]+' '+atual[1]) >= 900 and clima():
             temp,humi,sensacao,horarioM = clima()
             atual = dataHora()
-            print(temp,humi,sensacao,horarioM ,atual)
+            print(atual)
             insereTempAPI(atual[0],horarioM,atual[1],temp,humi,sensacao)
     except Exception as err:
         print('Error:' ,err)
         d,h = dataHora()
-        e = "  Error: {0} no dia ".format(err) + d + " as " +h +"\n"
+        e = "Error: {0} no dia ".format(err) + d + " as " +h +"\n"
         arq = open('log_api.txt', 'a+')
         arq.write(e)
         arq.close()

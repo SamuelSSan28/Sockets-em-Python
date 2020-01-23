@@ -5,3 +5,12 @@
   Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:32:02
   Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:32:03
   Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:32:07
+  Error: -1 no dia 23/01/2020 as 09:52:56
+  Error: -1 no dia 23/01/2020 as 10:02:19
+  Error: -1 no dia 23/01/2020 as 10:11:18
+  Error: envia_pro_BD() missing 1 required positional argument: 'id' no dia 23/01/2020 as 10:20:11
+  Error: envia_pro_BD() missing 1 required positional argument: 'id' no dia 23/01/2020 as 10:22:46
+  Error: envia_pro_BD() missing 1 required positional argument: 'id' no dia 23/01/2020 as 10:27:09
+  Error: -1 no dia 23/01/2020 as 10:30:40
+  Error: local variable 'med_temp' referenced before assignment no dia 23/01/2020 as 10:33:29
+  Error: name 'i' is not defined no dia 23/01/2020 as 10:40:35

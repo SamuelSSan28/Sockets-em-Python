@@ -1,182 +1,132 @@
 ﻿import socket
 from BD_2 import BancoDeDados
 from datetime import datetime
-from datetime import timedelta
-import numpy as np
 
 
 def dataHora():
     '''
-    :return: Retorna a data e a hora do PC no momento
+    :return: Retorna  um vetor com a data na primeira posição e a hora na segunda. As duas então no formato convecional e são do tipo string.
     '''
-    data_e_hora_atuais = datetime.now()
-    #print(data_e_hora_atuais)
+    data_e_hora_atuais = datetime.now()  # recebe a data e hora atuais
     return data_e_hora_atuais.strftime("%d/%m/%Y %H:%M:%S").split()
 
 
-def recebe_msg(con):
+def recebe_e_filtra_msg(con):
     '''
     :param con: conexao socket aberta no momento
-    :return: mensagem recebida
+    :return: mensagem recebida decodificada de binario para string
     '''
     m = ''
     msg = con.recv(1024)
     m = str(msg, 'cp437').split()
     while not (b'fim' in msg):
         msg = con.recv(1024)
-        if not msg : return
-        m = str(msg, 'cp437').split() #decodificando a msg
+        if not msg: return
+        m = str(msg, 'cp437').split()  # decodificando a msg
 
     con.close()
 
+    m.pop(-1)  # remove a ultima palavra da string que é uma msg de controle
+    m.pop(0)  # remove a primeira palavra da string que é o tipo do sensor pq esse script é só pra sensores entao todos são 0
+    data, horario = dataHora()  # data e horario que a msg foi recebida
+    m.append(data)  # adiciona  o horario que a msg foi recebida
+    m.append(horario)  # adiciona a data que a msg foi recebida
     return m
 
 
-def envia_pro_BD(tipo,registros):
+def envia_pro_BD(registros,id_node):
     '''
-    :param tipo: tipo de registro - 1: Controle , 2: Sensores
     :param registros: os dados que vão ser inseridos no BD
     :return:
     '''
     bd = BancoDeDados()
-    if(tipo):
-        aux = registros[5]
-        ultimo = aux[1].split(':')
-        #import pdb; pdb.set_trace()
-        ultimo = timedelta(days = 0, hours = int(ultimo[0]), minutes = int(ultimo[1]),seconds=int(ultimo[2]))
-        novo = registros[4].split(':')
-        novo = timedelta(days = 0, hours = int(novo[0]), minutes = int(novo[1]),seconds=int(novo[2]))
-        result = novo - ultimo
+    soma_temp = 0
+    soma_umi = 0
+    soma_corrente = 0
 
-        if np.abs(result.total_seconds()) < 20:
-            bd.alteraDados_Controle(registros[0], aux[0], aux[1], registros[4], registros[1])
-        else:
-            bd.insereDados_Controle(registros[0],registros[3],registros[4],registros[1],registros[2])
+    for msg in registros[id_node]:
+        if not (msg[1] or msg[2] or msg[3]):
+        	break
+        soma_temp += float(msg[1])
+        soma_umi += float(msg[3])
+        soma_corrente += float(msg[2])
 
+    msg = registros[id_node][-1]  # ultima mensagem adicioanda a lista
+    med_temp = round(soma_temp / len(registros[id_node]), 3)
+    med_umi = round(soma_umi / len(registros[id_node]), 3)
+    sum_corrente = round(soma_corrente, 3)
+
+    print(sum_corrente)
+
+    if bd.buscaNo(msg[0]):
+        bd.insereDados_Sensores(msg[0], msg[4], msg[5], str(med_temp), str(sum_corrente), str(med_umi)) #armazena dados no BD
     else:
-        for i in registros:
-            if len(registros[i]) == 6: #condicao para mandar pro servidor
-                med_temp = 0
-                med_umi = 0
-                sum_corrente = 0
-                #import pdb; pdb.set_trace()
+        bd.insereNodes(msg[0], 0)  #armazena novo nó no BD
+        bd.insereDados_Sensores(msg[0], msg[4], msg[5], str(med_temp), str(sum_corrente), str(med_umi)) #armazena dados no BD
+
+    registros[i] = []
 
 
-                for j in registros[i]:
-                    if not (j[1] or j[2] or j[3]):
-                        return
-                    med_temp += float(j[1])
-                    med_umi += float(j[3])
-                    sum_corrente += float(j[2])
+def main():
+    '''
+        responsavel por gerenciar os processos de receber,filtrar e armazenar os registros dos sensores de temperatura  e corrente
+    '''
 
-                med_temp = round(med_temp /6,3)
-                med_umi = round(med_umi /6,3)
-                sum_corrente = round(sum_corrente,3)
-                if bd.buscaNo(j[0]):
-                    bd.insereDados_Sensores(j[0], j[4], j[5], str(med_temp), str(sum_corrente), str(med_umi))
-                else:
-                    bd.insereNodes(j[0], tipo)
-                    bd.insereDados_Sensores(j[0], j[4], j[5], str(med_temp), str(sum_corrente), str(med_umi))
+    HOST = '10.94.15.69'  # Endereco IP do Servidor
+    PORT = 9999  # Porta que o Servidor está
 
+    sensores = {}  # dicionario com a lista de sensores e seus registros
+    controle = ''
 
-                registros[i] = []
+    tempo_controle = dataHora()  # pegando data e hora atual
 
+    # comentar
+    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp.bind((HOST, PORT))
+    tcp.listen(7)
 
+    print("Servidor On")
+    print(dataHora())
 
-def controlador(msg):
-    """
-        Vai ser responsavel por filtrar as mensagens que chegam
-    """
-    msg.pop(-1)  # remove a ultima palavra da string que é uma msg de controle
-    t = msg.pop(0)  # remove a primeira palavra da string que é o codigo do tipo de msg
-
-    if t == '0': #Nós que estão coletando temperatura/corrente
-        data, horario = dataHora()  # horario
-        msg.append(data)
-        msg.append(horario)
-        #print(msg)
-
-    elif t == '1':#Nó controle do Ar
-        data, horario = dataHora()  # horario
-        msg.append(data)
-        msg.append(horario)
-
-    return int(t),msg
-
-#-------------------------main---------------------------------
-conectados = [] # lista de nodes que estão conectados
-
-HOST = '10.94.15.69'  # Endereco IP do Servidor
-PORT = 9999
-# Porta que o Servidor está
-
-sensores = {}
-controle = ''
-tempo_controle = dataHora()
-
-tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-orig = (HOST, PORT)
-
-tcp.bind(orig)
-tcp.listen(7)
-
-print("Servidor On")
-print(dataHora())
-
-while True:
-    try:
+    while True:
         try:
-            con, cliente = tcp.accept()
-            a = recebe_msg(con)
-        except Exception as err:
             try:
-                con.close()
+                con, cliente = tcp.accept()  # aceita uma conexão com um cliente
+                msg = recebe_e_filtra_msg(con)  # recebe a msg eviada pelo cliente
             except Exception as err:
-                print("Não conseguiu fechar a conexao")
+                try:
+                    con.close()  # tenta fechar a conexexão caso tenha acontecido algum erro
+                except Exception as err:
+                    print("Não conseguiu fechar a conexao")
+
+                d, h = dataHora()
+                e = "  Error: {0} no dia".format(err) + d + " as " + h + '\n'
+                arq = open('log.txt', 'a+')
+                arq.write(e)
+                arq.close()
+                continue
+
+            if not msg: continue
+
+            if msg[0] in sensores:  # se id já é conhecido
+                print(msg)
+                sensores[msg[0]].append(msg)  # adiciona a mensagem na id
+                if len(sensores[msg[0]]) == 6 and msg[0] != '4':  # se já tem 6 registros (1 minuto)
+                    envia_pro_BD(sensores,msg[0])  # armazena os dados
+                elif len(sensores[msg[0]]) == 12 and msg[0] == '4':# se já tem 12 registros de 5 SEGUNDOS (1 minuto)
+                	envia_pro_BD(sensores,msg[0])  # armazena os dados
+            else:
+                sensores.update({msg[0]: []})
+                sensores[msg[0]].append(msg)
+
+
+        except Exception as err:
             d, h = dataHora()
-            e = "  Error: {0} no dia".format(err) + d + " as " + h
+            e = "  Error: {0} no dia ".format(err) + d + " as " + h + "\n"
             arq = open('log.txt', 'a+')
             arq.write(e)
             arq.close()
             continue
 
-        if not a: continue
 
-        t,msg = controlador(a) #   t: tipo de msg       msg: a mensagem
-
-        print(msg[0])
-
-        if msg[0] == '4':
-            msg[1] = 0
-            msg[3] = 0
-
-        print(msg)
-        if t == 1:
-            msg.append(tempo_controle)
-            controle = cliente
-            envia_pro_BD(t, msg)
-            tempo_controle = (msg[3] + " " + msg[4]).split()
-
-        if cliente[0] in sensores and t == 0:  # se ip já é conhecido
-            sensores[cliente[0]].append(msg)
-            #if len(sensores[cliente[0]]) == 6:
-            #print("Sensor" , msg)
-            envia_pro_BD(t, sensores)
-        elif t == 0:
-            sensores.update({cliente[0]: []})
-            sensores[cliente[0]].append(msg)
-            envia_pro_BD(t, sensores)
-
-
-    except Exception as err:
-        d,h = dataHora()
-        e = "  Error: {0} no dia ".format(err) + d + " as " +h +"\n"
-        arq = open('log.txt', 'a+')
-        arq.write(e)
-        arq.close()
-        continue
-
-
-
-
+main()
