@@ -56,15 +56,13 @@ def envia_pro_BD(registros,id_node):
     med_umi = round(soma_umi / len(registros[id_node]), 3)
     sum_corrente = round(soma_corrente, 3)
 
-    print(sum_corrente)
-
     if bd.buscaNo(msg[0]):
         bd.insereDados_Sensores(msg[0], msg[4], msg[5], str(med_temp), str(sum_corrente), str(med_umi)) #armazena dados no BD
     else:
         bd.insereNodes(msg[0], 0)  #armazena novo nó no BD
         bd.insereDados_Sensores(msg[0], msg[4], msg[5], str(med_temp), str(sum_corrente), str(med_umi)) #armazena dados no BD
 
-    registros[i] = []
+    registros[id_node] = []
 
 
 def main():
@@ -104,12 +102,13 @@ def main():
                 arq = open('log.txt', 'a+')
                 arq.write(e)
                 arq.close()
+                print(e)
                 continue
 
             if not msg: continue
 
             if msg[0] in sensores:  # se id já é conhecido
-                print(msg)
+                #print(msg[0],msg)
                 sensores[msg[0]].append(msg)  # adiciona a mensagem na id
                 if len(sensores[msg[0]]) == 6 and msg[0] != '4':  # se já tem 6 registros (1 minuto)
                     envia_pro_BD(sensores,msg[0])  # armazena os dados
@@ -126,6 +125,7 @@ def main():
             arq = open('log.txt', 'a+')
             arq.write(e)
             arq.close()
+            print(e)
             continue
 
 

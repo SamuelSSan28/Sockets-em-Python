@@ -1,6 +1,1 @@
-  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 16:59:02
-  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 16:59:10
-  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:02:30
-  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:02:31
-  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 11/12/2019 as 17:02:33
-  Error: -1 no dia 23/01/2020 as 09:43:21
+  Error: (1265, "Data truncated for column 'temperatura' at row 1") no dia 20/02/2020 as 09:48:26
